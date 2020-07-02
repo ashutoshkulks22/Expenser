@@ -5,10 +5,16 @@ const list = document.getElementById("list");
 const form = document.getElementById("form");
 const text = document.getElementById("text");
 const amount = document.getElementById("amount");
+const checkbox = document.getElementById("checkbox");
 
-const formatter = new Intl.NumberFormat("en-US", {
+const INR = new Intl.NumberFormat("en-IN", {
   style: "currency",
   currency: "INR",
+});
+
+const USD = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
 });
 
 const localStorageTransactions = JSON.parse(
@@ -52,11 +58,13 @@ function generateID() {
 // Add transactions to the DOM list
 
 function addTransactionDOM(transaction) {
+  let formatter = checkbox.checked ? INR : USD;
   const sign = transaction.amount < 0 ? "-" : "+";
 
   const item = document.createElement("li");
 
   item.classList.add(transaction.amount < 0 ? "minus" : "plus");
+  item.classList.add("zero");
 
   item.innerHTML = `${transaction.text} <span> ${sign}${formatter.format(
     Math.abs(transaction.amount)
@@ -70,18 +78,20 @@ function addTransactionDOM(transaction) {
 // Update values of balance, income and expenses
 
 function updateValues() {
+  let formatter = checkbox.checked ? INR : USD;
+
   const amounts = transactions.map((transaction) => transaction.amount);
 
-  const total = amounts.reduce((acc, item) => (acc += item), 0).toFixed(2);
+  const total = amounts.reduce((acc, item) => (acc += item), 0).toFixed(1);
 
   const income = amounts
     .filter((item) => item > 0)
     .reduce((acc, item) => (acc += item), 0)
-    .toFixed(2);
+    .toFixed(1);
 
   const expense =
     amounts.filter((item) => item < 0).reduce((acc, item) => (acc += item), 0) *
-    -(1).toFixed(2);
+    -(1).toFixed(1);
 
   balance.innerText = `${formatter.format(total)}`;
   money_plus.innerText = `${formatter.format(income)}`;
@@ -95,6 +105,20 @@ function removeTransaction(id) {
   updateLocalStorage();
 
   init();
+}
+
+// Reformat transactions
+
+function formatTransaction() {
+  let formatter = checkbox.checked ? INR : USD;
+  const amounts = transactions.map((transaction) => transaction.amount);
+
+  var items = list.getElementsByTagName("span");
+  for (var i = 0; i < items.length; i++) {
+    var sign = amounts[i] < 0 ? "-" : "+";
+
+    items[i].innerHTML = `${sign}${formatter.format(Math.abs(amounts[i]))}`;
+  }
 }
 
 // Update local storage transactions
@@ -114,3 +138,5 @@ function init() {
 init();
 
 form.addEventListener("submit", addTransaction);
+checkbox.addEventListener("click", updateValues);
+checkbox.addEventListener("click", formatTransaction);
