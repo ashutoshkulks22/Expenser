@@ -226,7 +226,7 @@ input:focus + .slider {
 }
 
 input:checked + .slider:before {
-  content: "  ₹";
+  content: " ₹";
   white-space: pre;
   color: #6772e5;
   -webkit-transform: translateX(26px);
